@@ -20,8 +20,8 @@ def get_transition_viewset_method(transition_name, **kwargs):
         if not django_fsm.has_transition_perm(transition_method, request.user):
             raise PermissionDenied
 
-        if hasattr(object, 'get_{0}_kwargs'.format(transition_name)):
-            kwargs = getattr(object, 'get_{0}_kwargs'.format(transition_name))()
+        if hasattr(self, 'get_{0}_kwargs'.format(transition_name)):
+            kwargs = getattr(self, 'get_{0}_kwargs'.format(transition_name))()
         else:
             kwargs = {}
 
