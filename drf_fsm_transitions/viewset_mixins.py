@@ -36,7 +36,7 @@ def get_transition_viewset_method(transition_name, **kwargs):
     return inner_func
 
 
-def get_viewset_transition_action_mixin(model, **kwargs):
+def get_viewset_transition_action_mixin(model, field_name='status', **kwargs):
     '''
     Find all transitions defined on `model`, then create a corresponding
     viewset action method for each and apply it to `Mixin`. Finally, return
@@ -47,7 +47,7 @@ def get_viewset_transition_action_mixin(model, **kwargs):
     class Mixin(object):
         save_after_transition = True
 
-    transitions = instance.get_all_status_transitions()
+    transitions = getattr(instance, 'get_all_{0}_transitions'.format(field_name))()
     transition_names = set(x.name for x in transitions)
     for transition_name in transition_names:
         setattr(
