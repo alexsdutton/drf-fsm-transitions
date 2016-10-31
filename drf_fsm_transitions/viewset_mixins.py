@@ -1,5 +1,9 @@
+import inspect
+
+import django_fsm
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 
 def get_transition_viewset_method(transition_name, **kwargs):
@@ -11,7 +15,17 @@ def get_transition_viewset_method(transition_name, **kwargs):
         object = self.get_object()
         transition_method = getattr(object, transition_name)
 
-        transition_method(by=self.request.user)
+        if not django_fsm.can_proceed(transition_method):
+            raise ValidationError({'detail': 'Conditions not met'})
+        if not django_fsm.has_transition_perm(transition_method, request.user):
+            raise PermissionDenied
+
+        if hasattr(self, 'get_{0}_kwargs'.format(transition_name)):
+            kwargs = getattr(self, 'get_{0}_kwargs'.format(transition_name))()
+        else:
+            kwargs = {}
+
+        transition_method(**kwargs)
 
         if self.save_after_transition:
             object.save()
